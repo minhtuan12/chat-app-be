@@ -1,27 +1,48 @@
-
+/* eslint-disable no-console */
 import express from 'express'
-import { mapOrder } from '~/utils/sorts.js'
+import exitHook from 'async-exit-hook'
+import { CONNECT_DB, CLOSE_DB } from './config/mongodb'
+import { APIs } from './routes/api'
+import env from './config/environment'
+import { errorHandlingMiddleware } from './middlewares/errorHandlingMiddleware'
+import cors from 'cors'
+import { corsOptions } from './config/cors'
 
-const app = express()
+const START_SERVER = () => {
+  const app = express()
 
-const hostname = 'localhost'
-const port = 3001
+  //Use cors
+  app.use(cors(corsOptions))
 
-app.get('/', (req, res) => {
-  // Test Absolute import mapOrder
-  console.log(mapOrder(
-    [ { id: 'id-1', name: 'One' },
-      { id: 'id-2', name: 'Two' },
-      { id: 'id-3', name: 'Three' },
-      { id: 'id-4', name: 'Four' },
-      { id: 'id-5', name: 'Five' } ],
-    ['id-5', 'id-4', 'id-2', 'id-3', 'id-1'],
-    'id'
-  ))
-  res.end('<h1>Hello World!</h1><hr>')
-})
+  const hostname = env.APP_HOST || 'localhost'
+  const port = env.APP_PORT || 3001
 
-app.listen(port, hostname, () => {
-  // eslint-disable-next-line no-console
-  console.log(`Hello Trung Quan Dev, I am running at ${ hostname }:${ port }/`)
-})
+  //Enable req.body json data
+  app.use(express.json())
+
+  //Use APIs
+  app.use('/api', APIs)
+
+  app.get('/', (req, res) => {
+    res.end('<h1>Server running...</h1><hr>')
+  })
+
+  //error handling middleware
+  app.use(errorHandlingMiddleware)
+
+  app.listen(port, hostname, () => {
+    console.log(`Hello world, I am running at ${hostname}:${port}/`)
+  })
+
+  exitHook(() => {
+    CLOSE_DB()
+  })
+}
+
+CONNECT_DB()
+  .then(() => console.log('Connected to Database!'))
+  .then(() => START_SERVER())
+  .catch((error) => {
+    console.error(error)
+    process.exit(0)
+  })

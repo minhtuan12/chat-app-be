@@ -1,0 +1,9 @@
+const MESSAGE_STATUS = []
+MESSAGE_STATUS['UNSEEN'] = 0
+MESSAGE_STATUS['SEEN'] = 1
+
+const ENUM = {
+  MESSAGE_STATUS
+}
+
+export default ENUM

@@ -1,0 +1,20 @@
+{
+  "semi": false,
+  "singleQuote": true,
+  "printWidth": 80,
+  "tabWidth": 2,
+  "trailingComma": "none",
+  "arrowParens": "always",
+  "jsxBracketSameLine": false,
+  "useTabs": false,
+  "endOfLine": "auto",
+  "proseWrap": "always",
+  "overrides": [
+    {
+      "files": ["*.json", "*.md"],
+      "options": {
+        "tabWidth": 2
+      }
+    }
+  ]
+}
