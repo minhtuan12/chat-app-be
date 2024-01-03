@@ -1,3 +1,4 @@
+import { GET_DB } from '~/config/mongodb'
 import { userModel } from '~/models/userModel'
 import { generatePassword } from '~/utils/helpers'
 
@@ -16,6 +17,40 @@ const createNew = async (reqBody) => {
   }
 }
 
+const getList = async (req) => {
+  try {
+    let { q, page, page_size } = req.query
+    q = q ? { $regex: new RegExp(q, 'i') } : null
+    page = page ? Number(page) : 1
+    page_size = page_size ? Number(page_size) : 20
+    const result = await GET_DB()
+      .collection(userModel.COLLECTION_NAME)
+      .aggregate([
+        {
+          $match: {
+            deleted_at: null,
+            _id: { $ne: req.user_id },
+            ...(q ? { $or: [{ name: q }, { username: q }] } : null)
+          }
+        },
+        { $skip: (page - 1) * page_size },
+        { $limit: page_size },
+        {
+          $project: {
+            password: 0,
+            deleted_at: 0
+          }
+        }
+      ])
+      .toArray()
+
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const userService = {
-  createNew
+  createNew,
+  getList
 }

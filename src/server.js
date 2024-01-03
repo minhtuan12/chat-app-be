@@ -7,9 +7,20 @@ import env from './config/environment'
 import { errorHandlingMiddleware } from './middlewares/errorHandlingMiddleware'
 import cors from 'cors'
 import { corsOptions } from './config/cors'
+import { rateLimit } from 'express-rate-limit'
 
 const START_SERVER = () => {
   const app = express()
+
+  const limiter = rateLimit({
+    windowMs: 1 * 60 * 1000,
+    limit: 100,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false
+  })
+
+  //Api timeout limit
+  app.use(limiter)
 
   //Use cors
   app.use(cors(corsOptions))
