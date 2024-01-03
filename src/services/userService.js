@@ -1,4 +1,5 @@
 import { GET_DB } from '~/config/mongodb'
+import { roomModel } from '~/models/roomModel'
 import { userModel } from '~/models/userModel'
 import { generatePassword } from '~/utils/helpers'
 
@@ -33,8 +34,60 @@ const getList = async (req) => {
             ...(q ? { $or: [{ name: q }, { username: q }] } : null)
           }
         },
+        {
+          $lookup: {
+            from: roomModel.COLLECTION_NAME,
+            let: { friendId: '$_id' },
+            pipeline: [
+              {
+                $match: {
+                  deleted_at: null,
+                  $expr: {
+                    $or: [
+                      {
+                        $and: [
+                          { $eq: ['$creator_id', req.user_id] },
+                          { $in: ['$$friendId', '$members'] }
+                        ]
+                      },
+                      {
+                        $and: [
+                          { $eq: ['$creator_id', '$$friendId'] },
+                          { $in: [req.user_id, '$members'] }
+                        ]
+                      }
+                    ]
+                  },
+                  type: 0
+                }
+              },
+              {
+                $project: {
+                  deleted_at: 0
+                }
+              }
+            ],
+            as: 'room'
+          }
+        },
         { $skip: (page - 1) * page_size },
         { $limit: page_size },
+        {
+          $addFields: {
+            room: {
+              $cond: {
+                if: {
+                  $and: [
+                    { $isArray: '$room' },
+                    { $gt: [{ $size: '$room' }, 0] }
+                  ]
+                },
+                then: { $arrayElemAt: ['$room', 0] },
+                else: null
+              }
+            }
+          }
+        },
         {
           $project: {
             password: 0,

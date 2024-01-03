@@ -34,7 +34,7 @@ const START_SERVER = () => {
   //Use APIs
   app.use('/api', APIs)
 
-  app.get('/', (req, res) => {
+  app.use('/', (req, res) => {
     res.end('<h1>Server running...</h1><hr>')
   })
 

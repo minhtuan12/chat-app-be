@@ -3,7 +3,7 @@ import { chatController } from '~/controllers/chatController'
 import verifyToken from '~/middlewares/VerifyToken'
 import { validate } from '~/utils/validators'
 import {
-  ValidateCanUserSendMessageToRoom,
+  ValidateUserAndMessageExists,
   chatValidation,
   checkUserBelongToRoom
 } from '~/validations/chatValidation'
@@ -20,7 +20,7 @@ Router.post(
   '/send-message',
   validate(chatValidation.sendMessage),
   verifyToken,
-  ValidateCanUserSendMessageToRoom,
+  ValidateUserAndMessageExists,
   chatController.createNew
 )
 
