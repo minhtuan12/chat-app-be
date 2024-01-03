@@ -10,6 +10,16 @@ const createNew = async (req, res, next) => {
   }
 }
 
+const getList = async (req, res, next) => {
+  try {
+    const listUser = await userService.getList(req)
+    res.status(StatusCodes.CREATED).json(listUser)
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const userController = {
-  createNew
+  createNew,
+  getList
 }
