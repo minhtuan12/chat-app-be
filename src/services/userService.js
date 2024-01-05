@@ -62,8 +62,43 @@ const getList = async (req) => {
                 }
               },
               {
+                $lookup: {
+                  from: 'messages',
+                  let: { roomId: '$_id' },
+                  pipeline: [
+                    {
+                      $match: {
+                        deleted_at: null,
+                        status: 0,
+                        $expr: {
+                          $and: [
+                            { $eq: ['$room_id', '$$roomId'] },
+                            { $ne: ['$creator_id', req.user_id] }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      $count: 'total'
+                    }
+                  ],
+                  as: 'count_unseen'
+                }
+              },
+              {
                 $project: {
                   deleted_at: 0
+                }
+              },
+              {
+                $addFields: {
+                  count_unseen: {
+                    $cond: {
+                      if: { $gt: [{ $size: '$count_unseen' }, 0] },
+                      then: { $arrayElemAt: ['$count_unseen.total', 0] },
+                      else: 0
+                    }
+                  }
                 }
               }
             ],

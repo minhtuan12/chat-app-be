@@ -22,3 +22,11 @@ export const transformToObjectId = (value, helpers) => {
   }
   return helpers.error('any.custom', { message: 'Invalid ObjectId' })
 }
+
+export const createRoomChatPrivateName = (id) => {
+  return `room-chat-private-${id}`
+}
+
+export const createRoomNotifyName = (id) => {
+  return `room-notify-private-${id}`
+}

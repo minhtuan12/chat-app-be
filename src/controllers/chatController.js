@@ -19,7 +19,17 @@ const getMessageInRoom = async (req, res, next) => {
   }
 }
 
+const confirmSeenMessage = async (req, res, next) => {
+  try {
+    await chatService.confirmSeenMessage(req)
+    res.status(StatusCodes.OK).json({ message: 'success' })
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const chatController = {
   createNew,
-  getMessageInRoom
+  getMessageInRoom,
+  confirmSeenMessage
 }
