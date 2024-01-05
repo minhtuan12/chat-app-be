@@ -38,7 +38,7 @@ const users = [
     password: 'Zent@123.edu.vn',
     avatar:
       'https://drallen.com.vn/wp-content/uploads/2023/09/chup-anh-di-bien.jpg'
-  },
+  }
 ]
 
 const userSeeder = async () => {

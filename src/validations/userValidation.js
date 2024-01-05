@@ -1,5 +1,4 @@
 import Joi from 'joi'
-import { OBJECT_ID_REGEX } from '~/utils/validators'
 
 const createUser = Joi.object({
   name: Joi.string().required().min(2).max(100).trim().strict().messages({
@@ -11,8 +10,7 @@ const createUser = Joi.object({
   }),
   username: Joi.string().required().trim().strict(),
   password: Joi.string().required().trim().strict(),
-  avatar: Joi.string().required().trim().strict(),
-  friends: Joi.array().items(Joi.string().pattern(OBJECT_ID_REGEX))
+  avatar: Joi.string().required().trim().strict()
 })
 
 export const userValidation = {
