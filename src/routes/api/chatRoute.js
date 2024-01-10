@@ -4,6 +4,7 @@ import verifyToken from '~/middlewares/VerifyToken'
 import { validate } from '~/utils/validators'
 import {
   ValidateUserAndMessageExists,
+  ValidateUserAndRoomExists,
   chatValidation,
   checkUserBelongToRoom
 } from '~/validations/chatValidation'
@@ -22,6 +23,14 @@ Router.post(
   verifyToken,
   ValidateUserAndMessageExists,
   chatController.createNew
+)
+
+Router.post(
+  '/confirm-seen-message',
+  validate(chatValidation.seenMessage),
+  verifyToken,
+  ValidateUserAndRoomExists,
+  chatController.confirmSeenMessage
 )
 
 export const chatRoute = Router

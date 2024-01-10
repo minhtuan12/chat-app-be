@@ -90,6 +90,36 @@ export const ValidateUserAndMessageExists = async (req, res, next) => {
   }
 }
 
+export const ValidateUserAndRoomExists = async (req, res, next) => {
+  try {
+    let { room_id } = req.body
+    const user_id = req.user_id
+
+    const room = await GET_DB()
+      .collection(roomModel.COLLECTION_NAME)
+      .findOne({
+        _id: new ObjectId(room_id),
+        deleted_at: null,
+        $or: [
+          { creator_id: new ObjectId(user_id) },
+          { members: { $elemMatch: { $eq: new ObjectId(user_id) } } }
+        ]
+      })
+
+    if (!room) {
+      return res.status(StatusCodes.FORBIDDEN).json({
+        error: true,
+        message: 'Bạn không có quyền truy cập phòng chat này!'
+      })
+    }
+    next()
+  } catch (error) {
+    next(
+      new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message)
+    )
+  }
+}
+
 export const chatValidation = {
   sendMessage: Joi.object({
     message: Joi.string().required().trim().max(1000).messages({
@@ -104,5 +134,25 @@ export const chatValidation = {
       'any.required': 'Id người nhận không được bỏ trống',
       'string.empty': 'Id người nhận không được bỏ trống'
     })
+  }),
+  seenMessage: Joi.object({
+    room_id: Joi.string().required().pattern(OBJECT_ID_REGEX).messages({
+      'string.base': 'Mã phòng phải là một chuỗi kí tự',
+      'string.pattern.base': 'Mã phòng không đúng định dạng',
+      'any.required': 'Mã phòng không được bỏ trống',
+      'string.empty': 'Mã phòng không được bỏ trống'
+    }),
+    list_message: Joi.array()
+      .items(Joi.string().pattern(OBJECT_ID_REGEX))
+      .min(1)
+      .required()
+      .messages({
+        'array.base': 'Dữ liệu phải là một mảng',
+        'array.min': 'Mảng phải chứa ít nhất một phần tử',
+        'any.required': 'Mã phòng không được bỏ trống',
+        'string.base': 'Mã phòng phải là một chuỗi kí tự',
+        'string.pattern.base': 'Mã phòng không đúng định dạng',
+        'string.empty': 'Mã phòng không được bỏ trống'
+      })
   })
 }

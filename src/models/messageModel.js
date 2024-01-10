@@ -1,4 +1,5 @@
 import Joi from 'joi'
+import { ObjectId } from 'mongodb'
 import { GET_DB } from '~/config/mongodb'
 import ENUM from '~/utils/enum'
 import { transformToObjectId } from '~/utils/helpers'
@@ -31,7 +32,29 @@ const validateBeforeCreate = async (data) => {
 const createNew = async (data) => {
   try {
     const standardData = await validateBeforeCreate(data)
-    return await GET_DB().collection(COLLECTION_NAME).insertOne(standardData)
+    const result = await GET_DB()
+      .collection(COLLECTION_NAME)
+      .insertOne(standardData)
+    return { ...result, document: { ...standardData, _id: result.insertedId } }
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+const getMessageById = async (msg_id) => {
+  try {
+    return await GET_DB()
+      .collection(COLLECTION_NAME)
+      .findOne(
+        {
+          $and: [{ _id: new ObjectId(msg_id) }, { deleted_at: null }]
+        },
+        {
+          projection: {
+            deleted_at: 0
+          }
+        }
+      )
   } catch (error) {
     throw new Error(error)
   }
@@ -40,5 +63,6 @@ const createNew = async (data) => {
 export const messageModel = {
   COLLECTION_NAME,
   COLLECTION_SCHEMA,
-  createNew
+  createNew,
+  getMessageById
 }
